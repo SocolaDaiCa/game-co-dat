@@ -1,3 +1,12 @@
+class Point {
+	constructor(rowIndex, colIndex) {
+		this.rowIndex = rowIndex;
+		this.colIndex = colIndex;
+	}
+	match(point) {
+
+	}
+}
 class Game {
 	genPoints() {
 		this.points = {
@@ -45,30 +54,49 @@ class Game {
 		// this.lines = [];
 		this.lines = [
 		/* box ngoài */
-		{ point1: { row: 1, col: 1}, point2: { row: 1, col: 7}, color: null},
-		{ point1: { row: 1, col: 7}, point2: { row: 7, col: 7}, color: null},
-		{ point1: { row: 7, col: 7}, point2: { row: 7, col: 1}, color: null},
-		{ point1: { row: 7, col: 1}, point2: { row: 1, col: 1}, color: null},
+		{point1: new Point(1, 1), point2: new Point(1, 4)},
+		{point1: new Point(1, 4), point2: new Point(1, 7)},
+		{point1: new Point(1, 7), point2: new Point(4, 7)},
+		{point1: new Point(4, 7), point2: new Point(7, 7)},
+		{point1: new Point(7, 7), point2: new Point(7, 4)},
+		{point1: new Point(7, 4), point2: new Point(7, 1)},
+		{point1: new Point(7, 1), point2: new Point(4, 1)},
+		{point1: new Point(4, 1), point2: new Point(1, 1)},
 		/* box trong */
-		{ point1: { row: 2, col: 2}, point2: { row: 2, col: 6}, color: null},
-		{ point1: { row: 2, col: 6}, point2: { row: 6, col: 6}, color: null},
-		{ point1: { row: 6, col: 6}, point2: { row: 6, col: 2}, color: null},
-		{ point1: { row: 6, col: 2}, point2: { row: 2, col: 2}, color: null},
+		{point1: new Point(2, 2), point2: new Point(2, 4)},
+		{point1: new Point(2, 4), point2: new Point(2, 6)},
+		{point1: new Point(2, 6), point2: new Point(4, 6)},
+		{point1: new Point(4, 6), point2: new Point(6, 6)},
+		{point1: new Point(6, 6), point2: new Point(6, 4)},
+		{point1: new Point(6, 4), point2: new Point(6, 2)},
+		{point1: new Point(6, 2), point2: new Point(4, 2)},
+		{point1: new Point(4, 2), point2: new Point(2, 2)},
 		/* box trong */
-		{ point1: { row: 3, col: 3}, point2: { row: 3, col: 5}, color: null},
-		{ point1: { row: 3, col: 5}, point2: { row: 5, col: 5}, color: null},
-		{ point1: { row: 5, col: 5}, point2: { row: 5, col: 3}, color: null},
-		{ point1: { row: 5, col: 3}, point2: { row: 3, col: 3}, color: null},
+		{point1: new Point(3, 3), point2: new Point(3, 4)},
+		{point1: new Point(3, 4), point2: new Point(3, 5)},
+		{point1: new Point(3, 5), point2: new Point(4, 5)},
+		{point1: new Point(4, 5), point2: new Point(5, 5)},
+		{point1: new Point(5, 5), point2: new Point(5, 4)},
+		{point1: new Point(5, 4), point2: new Point(5, 3)},
+		{point1: new Point(5, 3), point2: new Point(4, 3)},
+		{point1: new Point(4, 3), point2: new Point(3, 3)},
 		/* line chéo */
-		{ point1: { row: 2, col: 2}, point2: { row: 3, col: 3}, color: null},
-		{ point1: { row: 3, col: 5}, point2: { row: 2, col: 6}, color: null},
-		{ point1: { row: 6, col: 2}, point2: { row: 5, col: 3}, color: null},
-		{ point1: { row: 5, col: 5}, point2: { row: 6, col: 6}, color: null},
-		/* line dọc ngang */
-		{ point1: { row: 4, col: 1}, point2: { row: 4, col: 3}, color: null},
-		{ point1: { row: 1, col: 4}, point2: { row: 3, col: 4}, color: null},
-		{ point1: { row: 4, col: 5}, point2: { row: 4, col: 7}, color: null},
-		{ point1: { row: 5, col: 4}, point2: { row: 7, col: 4}, color: null}
+		{point1: new Point(2, 2), point2: new Point(3, 3)},
+		{point1: new Point(2, 6), point2: new Point(3, 5)},
+		{point1: new Point(6, 2), point2: new Point(5, 3)},
+		{point1: new Point(6, 6), point2: new Point(5, 5)},
+		/* line dọc */
+		{point1: new Point(1, 4), point2: new Point(2, 4)},
+		{point1: new Point(2, 4), point2: new Point(3, 4)},
+
+		{point1: new Point(5, 4), point2: new Point(6, 4)},
+		{point1: new Point(6, 4), point2: new Point(7, 4)},
+		/* line ngang */
+		{point1: new Point(4, 1), point2: new Point(4, 2)},
+		{point1: new Point(4, 2), point2: new Point(4, 3)},
+
+		{point1: new Point(4, 5), point2: new Point(4, 6)},
+		{point1: new Point(4, 6), point2: new Point(4, 7)},
 		];
 	}
 
@@ -86,105 +114,83 @@ class Game {
 	convertIndexToLength(index) {
 		return (index - 1) * this.size / 6 + 25;
 	}
+	matchPoint(point1, point2) {
+		if(point1.rowIndex != point2.rowIndex) {
+			console.log({point1, point2, match: false});
+			return false;
+		}
+		if(point1.colIndex != point2.colIndex) {
+			console.log({point1, point2, match: false});
+			return false;
+		}
+		console.log({point1, point2, match: true});
+		return true;
+	}
 	hasLine(point1, point2) {
 		for(var i = 0; i < this.lines.length; i++) {
-			var line = this.lines[i];
-			if(line.point1.row == point1.rowIndex &&
-				line.point2.row == point2.rowIndex && 
-				line.point1.col == point1.colIndex && 
-				line.point2.col == point2.colIndex
-				) {
+			if(this.matchPoint(this.lines[i].point1, point1) && this.matchPoint(this.lines[i].point2, point2)) {
 				return true;
+			}
+			if(this.matchPoint(this.lines[i].point1, point2) && this.matchPoint(this.lines[i].point2, point1)) {
+				return true;
+			}
 		}
-		if(line.point2.row == point1.rowIndex &&
-			line.point1.row == point2.rowIndex && 
-			line.point2.col == point1.colIndex && 
-			line.point1.col == point2.colIndex
-			) {
-			return true;
+		return false;
 	}
-}
-return false;
-}
-drawLine({point1, point2, color}) {
-	this.ctx.beginPath();
-	this.ctx.strokeStyle = color || '#000000';
+	drawLine({point1, point2, color}) {
+		this.ctx.beginPath();
+		this.ctx.strokeStyle = color || '#000000';
 
-	this.ctx.moveTo(
-		this.convertIndexToLength(point1.col),
-		this.convertIndexToLength(point1.row)
-		);
-	this.ctx.lineTo(
-		this.convertIndexToLength(point2.col),
-		this.convertIndexToLength(point2.row),
-		);
-	this.ctx.stroke();
-	this.ctx.closePath();
-}
-drawMap() {
-	this.ctx.clearRect(0, 0, this.size, this.size);
-	this.lines.forEach((line) => {
-		this.drawLine(line);
-	});
-	for(var rowIndex in this.points) {
-		for(var colIndex in this.points[rowIndex]) {
-			this.drawPoint({
-				col: colIndex,
-				rol: rowIndex,
-				color: '#000'
-			});
-		}
+		this.ctx.moveTo(
+			this.convertIndexToLength(point1.colIndex),
+			this.convertIndexToLength(point1.rowIndex)
+			);
+		this.ctx.lineTo(
+			this.convertIndexToLength(point2.colIndex),
+			this.convertIndexToLength(point2.rowIndex),
+			);
+		this.ctx.stroke();
+		this.ctx.closePath();
 	}
-}
-changeLineColor(line) {
-	for(var i = 0; i < this.lines.length; i++) {
-		var currentLine = this.lines[i];
-		if ((currentLine.point1.row == line.point1.row && currentLine.point2.row == line.point2.row && currentLine.point1.col == line.point1.col && currentLine.point2.col == line.point2.col) || (currentLine.point2.row == line.point1.row && currentLine.point1.row == line.point2.row && currentLine.point2.col == line.point1.col && currentLine.point1.col == line.point2.col)) {
-			this.lines[i].color = line.color;
-			console.log(this.lines[i]);
-			console.log('vào');
-			break;
-		}
+	drawMap() {
+		this.ctx.clearRect(0, 0, this.size, this.size);
+		this.lines.forEach((line) => {
+			this.drawLine(line);
+		});
 	}
-	this.drawMap();
-	console.log(this.lines);
-}
-addPoint(point) {
-	for(var pointInPoints in this.points) {
-		if(pointInPoints.row == point.row && pointInPoints.col == point.col) {
+	changeLineColor(line) {
+		for(var i = 0; i < this.lines.length; i++) {
+			var currentLine = this.lines[i];
+			if ((currentLine.point1.rowIndex == line.point1.rowIndex && currentLine.point2.rowIndex == line.point2.rowIndex && currentLine.point1.colIndex == line.point1.colIndex && currentLine.point2.colIndex == line.point2.colIndex) || (currentLine.point2.rowIndex == line.point1.rowIndex && currentLine.point1.rowIndex == line.point2.rowIndex && currentLine.point2.colIndex == line.point1.colIndex && currentLine.point1.colIndex == line.point2.colIndex)) {
+				this.lines[i].color = line.color;
+				console.log(this.lines[i]);
+				console.log('vào');
+				break;
+			}
+		}
+		this.drawMap();
+		console.log(this.lines);
+	}
+	addPoint(point) {
+		for(var pointInPoints in this.points) {
+			if(pointInPoints.rowIndex == point.rowIndex && pointInPoints.colIndex == point.colIndex) {
+				return;
+			}
+		}
+		this.points.push(point);
+		this.drawMap();
+	}
+	ownerOfPoint({rowIndex, colIndex}) {
+		return this.points[rowIndex][colIndex].player;
+	}
+	movePoint(oldPoint, newPoint) {
+		if(!this.isPointFree(newPoint)) {
 			return;
 		}
-	}
-	this.points.push(point);
-	this.drawMap();
-}
-movePoint(oldPoint, newPoint) {
-	if(!this.isPointFree(newPoint)) {
-		return;
-	}
-	// if(!this.hasLine(oldPoint, newPoint)) {
-	// 	return;
-	// }
-	var player = this.points[oldPoint.rowIndex][oldPoint.colIndex].player;
-	this.points[newPoint.rowIndex][newPoint.colIndex].player = player;
-	this.points[oldPoint.rowIndex][oldPoint.colIndex].player = 0;
-	this.drawMap();
-}
-drawPoint(point) {
-	this.ctx.beginPath();
-	this.ctx.arc(
-		this.convertIndexToLength(point.col),
-		this.convertIndexToLength(point.row),
-		20,
-		0,
-		2 * Math.PI,
-		false
-		);
-	this.ctx.fillStyle = point.color;
-	this.ctx.fill();
-	this.ctx.lineWidth = 1;
-	this.ctx.stroke();
-	this.ctx.closePath();
+		var player = this.points[oldPoint.rowIndex][oldPoint.colIndex].player;
+		this.points[newPoint.rowIndex][newPoint.colIndex].player = player;
+		this.points[oldPoint.rowIndex][oldPoint.colIndex].player = 0;
+	// this.drawMap();
 }
 isPointFree({rowIndex, colIndex}) {
 	return this.points[rowIndex][colIndex].player == 0;
@@ -194,7 +200,7 @@ isPointFree({rowIndex, colIndex}) {
 var game, play1, play2;
 var app;
 document.addEventListener('DOMContentLoaded', function () {
-	game = new Game("game_box", 540);
+	game = new Game("game_box", 480);
 	play1 = new Game('play1_box', 140);
 	play2 = new Game('play2_box', 140);
 	game.drawMap();
@@ -215,42 +221,65 @@ document.addEventListener('DOMContentLoaded', function () {
 				rowIndex: null,
 				colIndex: null,
 			},
-			limitPoints: 2,
+			limitPoints: 18,
 		},
 		created: function () {
 
 		},
 		methods: {
-			clickPoint(rowIndex, colIndex) {
-				console.log({rowIndex, colIndex});
+			step1({rowIndex, colIndex}) {
+				if(this.game.isPointFree({rowIndex, colIndex}) || true) {
+					this.game.setPoint(rowIndex, colIndex, this.currentTurn);
+					this.swapTurn();
+					this.pointsSetted++;
+				}
 				if(this.pointsSetted == this.limitPoints) {
 					this.step = 2;
 				}
-				if(this.step == 1 && this.pointsSetted < this.limitPoints && this.game.isPointFree({rowIndex, colIndex})) {
-					this.game.setPoint(rowIndex, colIndex, this.currentTurn);
-					this.currentTurn = 3 - this.currentTurn;
-					this.pointsSetted++;
-					return;
-				}
-				if(this.step != 2 ) {
-					return;
-				}
+			},
+			swapTurn() {
+				this.currentTurn = 3 - this.currentTurn;
+			},
+			resetState() {
+				this.preState.rowIndex = null;
+				this.preState.colIndex = null;
+
+				this.nextState.rowIndex = null;
+				this.nextState.colIndex = null;
+			},
+			step2({rowIndex, colIndex}) {
 				if(this.preState.rowIndex == null) {
+					if(this.game.isPointFree({rowIndex, colIndex})) {
+						this.resetState();
+						return;
+					}
+					if(this.game.ownerOfPoint({rowIndex, colIndex}) != this.currentTurn) {
+						this.resetState();
+						return;
+					}
 					this.preState.rowIndex = rowIndex;
 					this.preState.colIndex = colIndex;
 					return;
 				}
 				this.nextState.rowIndex = rowIndex;
 				this.nextState.colIndex = colIndex;
-				
-				// if(this.game.hasLine(this.preState, this.nextState)) {
-					this.game.movePoint(this.preState, this.nextState);
-				// }
-				this.preState.rowIndex = null;
-				this.preState.colIndex = null;
 
-				this.nextState.rowIndex = null;
-				this.nextState.colIndex = null;
+				console.log(this.game.hasLine(this.preState, this.nextState));
+				if(!this.game.isPointFree(this.preState) && this.game.isPointFree(this.nextState) && this.game.ownerOfPoint(this.preState) == this.currentTurn && this.game.hasLine(this.preState, this.nextState)) {
+					this.game.movePoint(this.preState, this.nextState);
+					this.swapTurn();
+				}
+				setTimeout(() => {
+					this.resetState();
+				}, 1000);
+			},
+			clickPoint(rowIndex, colIndex) {
+				console.log({rowIndex, colIndex});
+				switch(this.step) {
+					case 1: this.step1({rowIndex, colIndex}); break;
+					case 2: this.step2({rowIndex, colIndex}); break;
+					default: break;
+				}
 			}
 		}
 	});
