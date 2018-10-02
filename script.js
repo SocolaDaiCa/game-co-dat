@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', function () {
 		},
 		methods: {
 			step1({rowIndex, colIndex}) {
-				if(this.game.isPointFree({rowIndex, colIndex}) || true) {
+				if(this.game.isPointFree({rowIndex, colIndex})) {
 					this.game.points[rowIndex][colIndex].setPlayer(this.currentTurn);
 					this.swapTurn();
 					this.pointsSetted++;
