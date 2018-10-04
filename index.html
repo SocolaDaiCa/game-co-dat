@@ -15,23 +15,23 @@
 			<!-- <h1 class="text-center">Game Cờ Đặt</h1> -->
 		</div>
 		<div class="row">
-			<div class="col-xs-12 col-sm-12 col-md-12 col-lg-8">
+			<div class="col-xs-12 col-sm-9 col-md-9 col-lg-8">
 				<div style="position: relative;">
 					<template v-for="(rowIndex, row) in game.points">
 						<template v-for="(colIndex, point) in row">
-							<div :class="['node', {can_go: point.canGo}, {'fa fa-bullseye': point.canGo}]" :style="{left: ((colIndex - 1) * game.size / 6) + 'px', top: ((rowIndex - 1) * game.size / 6) + 'px', background: (point.player == 1 ? 'black' : (point.player == 2 ? 'red' : ''))}" @click="clickPoint(rowIndex, colIndex)"></div>
+							<div :class="['node', {can_go: point.canGo}, {'fa fa-bullseye': point.canGo}]" :style="{left: ((colIndex - 1) * game.size / 6) + 'px', top: ((rowIndex - 1) * game.size / 6) + 'px', background: (point.player == 1 ? 'black' : (point.player == 2 ? 'red' : 'transparent'))}" @click="clickPoint(rowIndex, colIndex)"></div>
 						</template>
 					</template>
 					<canvas id="game_box"></canvas>
 				</div>
 			</div>
-			<div class="col-xs-4 col-sm-4 col-md-4 col-lg-4">
-				<p><strong>Current Player:</strong> {{currentTurn}}</p>
+			<div class="col-xs-12 col-sm-3 col-md-3 col-lg-4">
+				<p><strong>Current Player:</strong> <i class="fa fa-odnoklassniki fa-2x" :style="{color: currentTurn == 1 ? 'black' : 'red'}"></i></p>
 				<p><strong>Current Step:</strong> {{step}}</p>
 				<p>move: from ({{preState.rowIndex}}, {{preState.colIndex}}) to ({{nextState.rowIndex}}, {{nextState.colIndex}})</p>
-				<p><i class="fa fa-odnoklassniki fa-2x"></i> 1</p>
+				<p><i class="fa fa-odnoklassniki fa-2x"></i>: {{playerHasPoint(1)}}</p>
 				<canvas id="play1_box"></canvas>
-				<p><i class="fa fa-odnoklassniki fa-2x" style="color: red"></i> 2</p>
+				<p><i class="fa fa-odnoklassniki fa-2x" style="color: red"></i>: {{playerHasPoint(2)}}</p>
 				<canvas id="play2_box"></canvas>
 			</div>
 		</div>

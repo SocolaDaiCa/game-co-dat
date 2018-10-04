@@ -1,5 +1,5 @@
-import Point from './module/Point.js';
-import Game from './module/Game.js';
+import Point from './Models/Point.js';
+import Game from './Models/Game.js';
 var game, play1, play2;
 var app;
 document.addEventListener('DOMContentLoaded', function () {
@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', function () {
 			pointsSetted: 0,
 			preState: new Point(null, null),
 			nextState: new Point(null, null),
-			limitPoints: 18,
+			limitPoints: 4,
 		},
 		created: function () {
 
@@ -39,7 +39,7 @@ document.addEventListener('DOMContentLoaded', function () {
 			},
 			resetState() {
 				this.preState  = new Point();
-				this.nextState = new Point();
+				// this.nextState = new Point();
 			},
 			step2({rowIndex, colIndex}) {
 				if(this.preState.rowIndex == null) {
@@ -63,6 +63,12 @@ document.addEventListener('DOMContentLoaded', function () {
 				
 				if(!this.game.isPointFree(this.preState) && this.game.isPointFree(this.nextState) && this.game.ownerOfPoint(this.preState) == this.currentTurn && this.game.hasLine(this.preState, this.nextState)) {
 					this.game.movePoint(this.preState, this.nextState);
+					if(this.playerCanEat(this.currentTurn)) {
+						this.step = 3;
+						console.log('can eat');
+						this.unHightlightAllState();
+						return;
+					}
 					this.swapTurn();
 				}
 				this.unHightlightAllState();
@@ -90,24 +96,56 @@ document.addEventListener('DOMContentLoaded', function () {
 				}
 			},
 			stepEat({colIndex, rowIndex}) {
-				// var point = this.game.points[colIndex][rowIndex];
-				if(point.isFree()) {
+				var point = this.game.points[rowIndex][colIndex];
+				if(this.game.isPointFree({rowIndex, colIndex})) {
+					console.log(`cant eat, point is free ${rowIndex}, ${colIndex}`);
 					return;
 				}
 				/* quân ta không được ăn quân mình*/
 				if(point.player == this.currentTurn) {
+					console.log('cant eat, point of myself');
 					return;
 				}
-				point.clearPlayer();
+				console.log('eat success');
+				point.player = 0;
+				this.swapTurn();
+			},
+			playerCanEat(player) {
+				// var {rowIndex: rowIndex, colIndex: colIndex} = this.nextState;
+				// var canEat
+				// if(rowIndex < 4 && colIndex < 4) {
+
+				// }
+				// return true;
 			},
 			clickPoint(rowIndex, colIndex) {
 				console.log({rowIndex, colIndex});
 				switch(this.step) {
-					case 1: this.step1({rowIndex, colIndex}); break;
-					case 2: this.step2({rowIndex, colIndex}); break;
-					case 3: this.stepEat({rowIndex, colIndex}); break;
+					case 1: {
+						this.step1({rowIndex, colIndex});
+						break;
+					};
+					case 2: {
+						this.step2({rowIndex, colIndex});
+						break;
+					};
+					case 3: {
+						this.stepEat({rowIndex, colIndex});
+						this.step = 2;
+						break;
+					};
 					default: break;
 				}
+			},
+			playerHasPoint(player) {
+				var count = 0;
+				var points = this.game.points;
+				for(var rowIndex in points) {
+					for(var colIndex in points[rowIndex]) {
+						count += points[rowIndex][colIndex].player == player;
+					}
+				}
+				return count; 
 			}
 		}
 	});
