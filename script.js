@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', function () {
 			pointsSetted: 0,
 			preState: new Point(null, null),
 			nextState: new Point(null, null),
-			limitPoints: 4,
+			limitPoints: 6,
 		},
 		created: function () {
 
@@ -63,7 +63,7 @@ document.addEventListener('DOMContentLoaded', function () {
 				
 				if(!this.game.isPointFree(this.preState) && this.game.isPointFree(this.nextState) && this.game.ownerOfPoint(this.preState) == this.currentTurn && this.game.hasLine(this.preState, this.nextState)) {
 					this.game.movePoint(this.preState, this.nextState);
-					if(this.playerCanEat(this.currentTurn)) {
+					if(this.playerCanEat(this.currentTurn,{rowIndex,colIndex})) {
 						this.step = 3;
 						console.log('can eat');
 						this.unHightlightAllState();
@@ -95,6 +95,7 @@ document.addEventListener('DOMContentLoaded', function () {
 					}
 				}
 			},
+
 			stepEat({colIndex, rowIndex}) {
 				var point = this.game.points[rowIndex][colIndex];
 				if(this.game.isPointFree({rowIndex, colIndex})) {
@@ -107,16 +108,60 @@ document.addEventListener('DOMContentLoaded', function () {
 					return;
 				}
 				console.log('eat success');
+				console.log({rowIndex,colIndex});
+				
 				point.player = 0;
 				this.swapTurn();
 			},
-			playerCanEat(player) {
-				// var {rowIndex: rowIndex, colIndex: colIndex} = this.nextState;
-				// var canEat
-				// if(rowIndex < 4 && colIndex < 4) {
+			playerCanEat(player, {rowIndex,colIndex}) {
+				// console.log("abc");
+				// console.log({rowIndex,colIndex});
+				var points = this.game.points;
 
-				// }
-				// return true;
+				if(rowIndex!=4 && colIndex !=4){
+					var row1 = 4 - rowIndex + parseInt(rowIndex);
+					var row2 = 2 * (4 - rowIndex) + parseInt(rowIndex);
+
+					var col1 = 4 - colIndex + parseInt(colIndex);
+					var col2 = 2 * (4 - colIndex) + parseInt(colIndex);
+
+					if((points[rowIndex][col1].player==player && points[rowIndex][col2].player==player)
+						|| (points[row1][colIndex].player==player && points[row2][colIndex].player==player))
+							return true;
+				}
+
+				if(rowIndex==4 || colIndex==4){
+					var row1 = parseInt(rowIndex) - Math.abs(4 - colIndex);
+					var row2 = parseInt(rowIndex) + Math.abs(4 - colIndex);
+					
+					if(row1==row2) {
+						row1--;
+						row2++;
+					}
+
+					console.log({"row1":row1,"row2":row2});
+
+					var col1 = parseInt(colIndex) - Math.abs(4 - rowIndex);
+					var col2 = parseInt(colIndex) + Math.abs(4 - rowIndex);
+
+					if(col1==col2) {
+						col1--;
+						col2++;
+					}
+
+					console.log({"col1":col1,"col2":col2});
+					if(rowIndex % 2 == 1){
+						if(points[rowIndex][col1].player==player && points[rowIndex][col2].player==player) 
+							return true;
+					}else if(colIndex % 2 == 1){
+						if(points[row1][colIndex].player==player && points[row2][colIndex].player==player) 
+							return true;
+					}else if((points[rowIndex][col1].player==player && points[rowIndex][col2].player==player)
+							|| (points[row1][colIndex].player==player && points[row2][colIndex].player==player))
+							return true;
+				}
+
+				return false;
 			},
 			clickPoint(rowIndex, colIndex) {
 				console.log({rowIndex, colIndex});
