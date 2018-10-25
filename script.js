@@ -12,7 +12,7 @@ var app = new Vue({
         points: null,
         currentTurn: 1,
         currentStep: 1,
-        limitPoints: 6,
+        limitPoints: 18,
         pointsSetted: 0,
         pointSelected: null,
         modes: {
@@ -56,8 +56,10 @@ var app = new Vue({
                     }
                     this.setPoint(i, j, this.currentTurn);
                     this.pointsSetted++;
-                    if (this.pointsSetted == this.limitPoints)
+                    if (this.pointsSetted == this.limitPoints) {
+                        toastr.success('Alert!', 'Change to step 2');
                         this.currentStep = 2;
+                    }
                     this.swapTurn();
                     break;
                 case 2:
@@ -67,9 +69,10 @@ var app = new Vue({
                     this.eatPoint(i, j);
                     break;
             }
-            this.checkEndGame();
-            if (this.mode != this.modes.PLAY_WITH_AI) {
-                console.log('1 vs 1');
+            if(this.checkEndGame()) {
+                return;
+            }
+            if (this.mode != this.modes.PLAY_WITH_AI || this.currentTurn != 2) {
                 return;
             }
             switch (this.currentStep) {
@@ -82,11 +85,18 @@ var app = new Vue({
                     this.swapTurn();
                     break;
                 case 2:
-                    let {points: points2} = AI.move();
+                    let {
+                        points: points2,
+                        players: players2
+                    } = AI.move(this.points, this.players, this.map, this.currentTurn);
                     this.points = points2;
+                    this.players = players2;
+                    this.swapTurn();
                     break;
             }
-            this.checkEndGame();
+            if(this.checkEndGame()) {
+                return;
+            }
         },
         movePoint(i, j) {
             if ((this.points[i][j] == 2 || this.points[i][j] == 1) && this.points[i][j] !== this.currentTurn) {
@@ -171,10 +181,10 @@ var app = new Vue({
             isEndgame = isEndgame || this.playerHasPoint(2) < 3;
             isEndgame = isEndgame && this.currentStep == 2;
             if (!isEndgame) {
-                return;
+                return false;
             }
             $('#modal-gameover').modal('show');
-
+            return true;
         }
     },
     created: function() {

@@ -30,10 +30,13 @@ class AI {
     			console.log(`check ${i} ${j}`);
     			for(let wi = -3; wi <= 3; wi++) {
     				for(let wj = -3; wj <= 3; wj++) {
-    					weights[i][j] += 50 * (map.hasLine(
+    					if(!map.hasLine(
     						{rowIndex: i, colIndex: j},
     						{rowIndex: i + wi, colIndex: j + wj}
-    					));
+    					)) {
+    						continue;
+    					}
+    					weights[i][j] += 50;
     				}
     			}
     		}
@@ -57,8 +60,11 @@ class AI {
     		points
     	};
     }
-    move(_points, players, map, currentTurn) {
-    	let points = Object.assign({}, _points);
+    move(_points, _players, map, currentTurn) {
+    	let points = {};
+    	let players = {};
+    	Object.assign(points, _points);
+    	Object.assign(players, _players);
     	let weights = this.genWeights();
     	// select point to move
     	let maxWeight = {
@@ -68,13 +74,13 @@ class AI {
     	};
     	for(let i in points) {
     		for(let j in points[i]) {
-    			if(points[i][j] == 0) {
+    			if(points[i][j] != currentTurn) {
     				continue;
     			}
     			i = Number(i);
     			j = Number(j);
     			for(let wi = -3; wi <= 3; wi++) {
-    				for(let wj = -3; wi <= 3; wj ++) {
+    				for(let wj = -3; wj <= 3; wj ++) {
     					if(!map.hasLine(
     						{rowIndex: i, colIndex: j},
     						{rowIndex: i + wi, colIndex: j + wj}
@@ -82,19 +88,19 @@ class AI {
     						continue
     					}
     					if(!points[i + wi][j + wj]) {
-    						return;
+    						continue;
     					}
     					weights[i][j] += 50;
     				}
     			}
-    			if(maxWeight.value < weights[i][j]) {
+    			if(maxWeight.value <= weights[i][j]) {
     				maxWeight.value = weights[i][j];
     				maxWeight.i = i;
     				maxWeight.j = j;
     			}
     		}
     	}
-    	/* move to */
+    	//  move to 
     	let to = {
     		value: 0,
     		i: 1, 
@@ -112,7 +118,7 @@ class AI {
     			i = Number(i);
     			j = Number(j);
     			for(let wi = -3; wi <= 3; wi++) {
-    				for(let wj = -3; wi <= 3; wj ++) {
+    				for(let wj = -3; wj <= 3; wj ++) {
     					if(!map.hasLine(
     						{rowIndex: i, colIndex: j},
     						{rowIndex: i + wi, colIndex: j + wj}
@@ -125,34 +131,61 @@ class AI {
     					weights[i][j] += 50;
     				}
     			}
-    			if (to.value < weights[i][j]) {
+    			if (to.value <= weights[i][j]) {
     				to.value = weights[i][j];
     				to.i = i, to.j = j;
     			}
     		}
     	}
-    	console.log(`set ${maxWeight.i} ${maxWeight.j}`);
-    	points["" + maxWeight.i]["" + maxWeight.j] = 0;
+    	console.log(`AI move (${maxWeight.i}, ${maxWeight.j}) to (${to.i}, ${to.j})`);
+    	// console.log(points);
+    	points[maxWeight.i][maxWeight.j] = 0;
     	points[to.i][to.j] = currentTurn;
-    	return {
-    		points
-    	};
+    	if(players[currentTurn].canEat(to.i, to.j, points, currentTurn)) {
+    		let {points: points3} = this.eat(points, map, currentTurn);
+    		points = points3;
+    	}
+    	return {points, players};
     }
-    // play(_points, _player1, _player2, alPha, beta, currentTurn, deep = 0) {
-    // 	points  = JSON.parse(JSON.stringify(_points));
-    // 	player1 = JSON.parse(JSON.stringify(_player1));
-    // 	player2 = JSON.parse(JSON.stringify(_player2));
-    // 	// var weigjht
-    // 	if(deep < this.deepLimit) {
-
-    // 	}
-    // 	return {
-    // 		points,
-    // 		player1,
-    // 		player2,
-    // 		alPha,
-    // 		beta
-    // 	};
-    // }
+    eat(_points, map, currentTurn) {
+    	let points = {};
+    	Object.assign(points, _points);
+    	let weights = this.genWeights();
+    	let maxWeight = {
+    		value: 0,
+    		i: 1,
+    		j: 1
+    	}
+    	for(let i in points) {
+    		for(let j in points[i]) {
+    			if(points[i][j] != 3 - currentTurn) {
+    				continue;
+    			}
+    			i = Number(i);
+    			j = Number(j);
+    			for(let wi = -3; wi <= 3; wi++) {
+    				for(let wj = -3; wj <= 3; wj ++) {
+    					if(!map.hasLine(
+    						{rowIndex: i, colIndex: j},
+    						{rowIndex: i + wi, colIndex: j + wj}
+    					)) {
+    						continue;
+    					}
+    					weights[i][j] += 50 * (points[i + wi][j + wj] == 0);
+    					weights[i][j] += 75 * (points[i + wi][j + wj] == 3 - currentTurn);
+    					weights[i][j] += 100 * (points[i + wi][j + wj] == currentTurn);
+    				}
+    			}
+    			if(maxWeight.value <= weights[i][j]) {
+    				maxWeight.value = weights[i][j];
+    				maxWeight.i = i;
+    				maxWeight.j = j;
+    			}
+    		}
+    	}
+    	console.log(`AI eat ${maxWeight.i} ${maxWeight.j}`);
+    	points[maxWeight.i][maxWeight.j] = 0;
+    	return {points};
+    }
 }
 export default AI;

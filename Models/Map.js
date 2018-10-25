@@ -133,32 +133,51 @@ class Map {
         return false;
     }
     canEat(i, j, points, currentTurn) {
-    console.log(`check can eat ${i} ${j}`);
+        console.log(`check can eat ${i} ${j}`);
         for (let x1 in this.lines) {
             for (let y1 in this.lines[x1]) {
                 for (let x2 in this.lines[x1][y1]) {
                     for (let y2 in this.lines[x1][y1][x2]) {
-                        var check = false;
-                        check = check || (x1 == i && y2 == j);
-                        check = check || (x2 == i && y2 == j);
-                        check = check || (x1 + x2 == 2 * i && y1 + y2 == 2 * j);
-                        check = check && points[x1][y1] == currentTurn;
-                        check = check && points[x2][y2] == currentTurn;
-                        check = check && points[i ][j ] == currentTurn;
-                        if (!check) {
+                        if(x1 == x2 && y1 == y2) {
                             continue;
                         }
-                        if(this.lines[x1][y1][x2][y2]) {
+                        x1 = Number(x1);
+                        y1 = Number(y1);
+                        x2 = Number(x2);
+                        y2 = Number(y2);
+                        if(points[x1][y1] != currentTurn) {
+                            continue;
+                        }
+                        if(points[x2][y2] != currentTurn) {
+                            continue;
+                        }
+                        if(points[(x1 + x2) / 2][(y1 + y2) / 2] != currentTurn) {
+                            continue;
+                        }
+                        if(
+                            (x1 == i && y1 == j) ||
+                            (x2 == i && y2 == j) ||
+                            ((x1 + x2) == 2 * i && (y1 + y2) == 2 * j)
+                        ) {
+
+                        } else {
+                            continue;
+                        }
+                        console.log(`zz ${x1} ${y1} ${x2} ${y2}`);
+                        if(this.lines[""+x1][""+y1][''+x2][''+y2]) {
+                            console.log(false);
                             return false;
                         }
 
                         this.lines[x1][y1][x2][y2] = 1;
                         this.draw();
+                        console.log(`${x1} ${y1} ${x2} ${y2} true`);
                         return true;
                     }
                 }
             }
         }
+        console.log(false);
         return false;
     }
 }
