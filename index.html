@@ -1,46 +1,112 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-	<meta charset="utf-8">
-	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>Game Cờ Đặt</title>
-	<link rel="stylesheet" type="text/css" href="public/bootstrap/css/bootstrap.min.css">
-	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-	<link rel="stylesheet" href="style.css">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Game Cờ Đặt</title>
+    <link rel="stylesheet" type="text/css" href="public/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <!-- <link rel="stylesheet" type="text/css" href="public/toastr/toastr.min.css">
+    	<script src="public/toastr/toastr.min.js"></script> -->
+    <link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+    <script src="//cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js"></script>
+    <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
-	<br>
-	<div class="container" id="app">
-		<div class="row">
-			<!-- <h1 class="text-center">Game Cờ Đặt</h1> -->
-		</div>
-		<div class="row">
-			<div class="col-xs-12 col-sm-9 col-md-9 col-lg-8">
-				<div style="position: relative;">
-					<template v-for="(rowIndex, row) in game.points">
-						<template v-for="(colIndex, point) in row">
-							<div :class="['node', {can_go: point.canGo}, {'fa fa-bullseye': point.canGo}]" :style="{left: ((colIndex - 1) * game.size / 6) + 'px', top: ((rowIndex - 1) * game.size / 6) + 'px', background: (point.player == 1 ? 'black' : (point.player == 2 ? 'red' : 'transparent'))}" @click="clickPoint(rowIndex, colIndex)"></div>
-						</template>
-					</template>
-					<canvas id="game_box"></canvas>
-				</div>
-			</div>
-			<div class="col-xs-12 col-sm-3 col-md-3 col-lg-4">
-				<p><strong>Current Player:</strong> <i class="fa fa-odnoklassniki fa-2x" :style="{color: currentTurn == 1 ? 'black' : 'red'}"></i></p>
-				<p><strong>Current Step:</strong> {{step}}</p>
-				<p>move: from ({{preState.rowIndex}}, {{preState.colIndex}}) to ({{nextState.rowIndex}}, {{nextState.colIndex}})</p>
-				<p><i class="fa fa-odnoklassniki fa-2x"></i>: {{playerHasPoint(1)}}</p>
-				<canvas id="play1_box"></canvas>
-				<p><i class="fa fa-odnoklassniki fa-2x" style="color: red"></i>: {{playerHasPoint(2)}}</p>
-				<canvas id="play2_box"></canvas>
-			</div>
-		</div>
-	</div>
-	<!-- development version, includes helpful console warnings -->
-	<!-- <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script> -->
-	<!-- production version, optimized for size and speed -->
-	<!-- <script src="https://cdn.jsdelivr.net/npm/vue"></script> -->
-	<script src="public/vue/vue.min.js"></script>
-	<script src="script.js" type="module"></script>
+    <br>
+    <div class="container" id="app">
+        <div class="row">
+            <h1 class="text-center">Game Cờ Đặt</h1>
+        </div>
+        <div class="row">
+            <div class="col-xs-12 col-sm-9 col-md-9 col-lg-8">
+                <div style="position: relative;">
+                    <template v-for="(i, row) in points">
+                        <template v-for="(j, point) in row">
+                            <div :class="['node', {can_go: point == 3}, {'fa fa-bullseye': point == 3}]" :style="{left: ((j - 1) * map.size / 6) + 'px', top: ((i - 1) * map.size / 6) + 'px', background: (point == 1 ? 'black' : (point == 2 ? 'red' : 'transparent'))}" @click="clickPoint(i, j)"></div>
+                        </template>
+                    </template>
+                    <canvas id="game_box" style="background: #f0f0f0"></canvas>
+                </div>
+            </div>
+            <div class="col-xs-12 col-sm-3 col-md-3 col-lg-4">
+                <div>
+                    <form action="" method="POST" class="form-horizontal" role="form">
+                        <div class="form-group">
+                            <label for="inputMode" class="col-sm-2 control-label">Mode:</label>
+                            <div class="col-sm-8">
+                                <select name="mode" id="inputMode" class="form-control" required="required" v-model="mode">
+                                    <template v-for="(mode, value) in modes">
+                                        <option v-bind:value="value">{{mode}}</option>
+                                    </template>
+                                </select>
+                            </div>
+                        </div>
+                        {{mode}}
+                    </form>
+                </div>
+                <div>
+                    <strong>Current Turn:</strong>
+                    <i class="fa fa-odnoklassniki fa-2x" :style="{color: currentTurn == 1 ? 'black' : 'red'}"></i>
+                </div>
+                <div>
+                    <strong>Current Step:</strong> {{currentStep}}
+                    <div v-if="currentStep == 1">
+                        Per Player put {{limitPoints / 2}} points to field
+                    </div>
+                    <div v-if="currentStep == 2">
+                        Select point to move ({{pointSelected.rowIndex || ''}}, {{pointSelected.colIndex || ''}})
+                    </div>
+                    <div v-if="currentStep == 3">
+                        Select point to eat
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6">
+                            <i class="fa fa-odnoklassniki fa-2x"></i>: {{playerHasPoint(1)}}<br>
+                            <div style="position: relative">
+                            	<canvas id="play1_box" style="position: relative;"></canvas>
+                            </div>
+                        </div>
+                        <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6">
+                            <i class="fa fa-odnoklassniki fa-2x" style="color: red"></i>: {{playerHasPoint(2)}}<br>
+                            <canvas id="play2_box"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Modal -->
+        <div id="modal-gameover" class="modal fade" role="dialog">
+            <div class="modal-dialog">
+                <!-- Modal content-->
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                        <h4 class="modal-title">Game Over</h4>
+                    </div>
+                    <div class="modal-body">
+                        <p>Congratulations Player {{3 - this.currentTurn}} has won</p>
+                    </div>
+                    <div class="modal-footer">
+                        <a href="" title="">
+                        	 <!-- data-dismiss="modal" -->
+                        	<button type="button" class="btn btn-default">New Game</button>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- development version, includes helpful console warnings -->
+    <!-- <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script> -->
+    <!-- production version, optimized for size and speed -->
+    <!-- <script src="https://cdn.jsdelivr.net/npm/vue"></script> -->
+    <script src="public/jquery/jquery.min.js"></script>
+    <script src="public/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script src="public/vue/vue.min.js"></script>
+    <script src="script.js" type="module"></script>
 </body>
+
 </html>

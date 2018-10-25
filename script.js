@@ -1,197 +1,190 @@
-import Point from './Models/Point.js';
-import Game from './Models/Game.js';
-var game, play1, play2;
-var app;
-document.addEventListener('DOMContentLoaded', function () {
-	game = new Game("game_box", 480);
-	play1 = new Game('play1_box', 140);
-	play2 = new Game('play2_box', 140);
-	game.drawMap();
-	play1.drawMap();
-	play2.drawMap();
-	app = new Vue({
-		el: "#app",
-		data: {
-			game,
-			currentTurn: 1,
-			step: 1,
-			pointsSetted: 0,
-			preState: new Point(null, null),
-			nextState: new Point(null, null),
-			limitPoints: 6,
-		},
-		created: function () {
+import Map from './Models/Map.js';
+import _AI from './Models/AI.js';
+var AI = new _AI(1);
+var app = new Vue({
+    el: "#app",
+    data: {
+        map: null,
+        players: {
+            "1": null,
+            "2": null
+        },
+        points: null,
+        currentTurn: 1,
+        currentStep: 1,
+        limitPoints: 6,
+        pointsSetted: 0,
+        pointSelected: null,
+        modes: {
+            'PLAY_WITH_AI': 1,
+            '2_PLAYER': 2
+        },
+        mode: 1,
+    },
+    methods: {
+        genPoints() {
+            this.points = {
+                "1": { "1": 0, "4": 0, "7": 0 },
+                "2": { "2": 0, "4": 0, "6": 0, },
+                "3": { "3": 0, "4": 0, "5": 0, },
+                "4": { "1": 0, "2": 0, "3": 0, "5": 0, "6": 0, "7": 0, },
+                "5": { "3": 0, "4": 0, "5": 0, },
+                "6": { "2": 0, "4": 0, "6": 0, },
+                "7": { "1": 0, "4": 0, "7": 0, },
+            }
+            // this.points = {
+            //     "1": { "1": 1, "4": 1, "7": 0 },
+            //     "2": { "2": 2, "4": 0, "6": 1, },
+            //     "3": { "3": 2, "4": 0, "5": 0, },
+            //     "4": { "1": 2, "2": 0, "3": 0, "5": 0, "6": 0, "7": 0, },
+            //     "5": { "3": 2, "4": 0, "5": 0, },
+            //     "6": { "2": 1, "4": 0, "6": 0, },
+            //     "7": { "1": 0, "4": 0, "7": 0, },
+            // }
+        },
+        swapTurn() {
+            this.currentTurn = 3 - this.currentTurn;
+        },
+        setPoint(i, j, value) {
+            this.points[i][j] = value;
+        },
+        clickPoint(i, j) {
+            switch (this.currentStep) {
+                case 1:
+                    if (this.points[i][j] !== 0) {
+                        break;
+                    }
+                    this.setPoint(i, j, this.currentTurn);
+                    this.pointsSetted++;
+                    if (this.pointsSetted == this.limitPoints)
+                        this.currentStep = 2;
+                    this.swapTurn();
+                    break;
+                case 2:
+                    this.movePoint(i, j);
+                    break;
+                case 3:
+                    this.eatPoint(i, j);
+                    break;
+            }
+            this.checkEndGame();
+            if (this.mode != this.modes.PLAY_WITH_AI) {
+                console.log('1 vs 1');
+                return;
+            }
+            switch (this.currentStep) {
+                case 1:
+                    let { points: points1 } = AI.put(this.points, this.map, this.players, this.currentTurn);
+                    this.points = points1;
+                    this.pointsSetted++;
+                    if (this.pointsSetted == this.limitPoints)
+                        this.currentStep = 2;
+                    this.swapTurn();
+                    break;
+                case 2:
+                    let {points: points2} = AI.move();
+                    this.points = points2;
+                    break;
+            }
+            this.checkEndGame();
+        },
+        movePoint(i, j) {
+            if ((this.points[i][j] == 2 || this.points[i][j] == 1) && this.points[i][j] !== this.currentTurn) {
+                return;
+            }
+            if (this.pointSelected == null && this.points[i][j] == 0) {
+                return;
+            }
+            if (this.pointSelected === null || this.points[i][j] == this.currentTurn) {
+                this.pointSelected = {
+                    rowIndex: i,
+                    colIndex: j,
+                }
+                this.hightlightStateYouCanGo();
+                return;
+            }
+            this.unHightlightStateYouCanGo();
+            if (this.pointSelected.rowIndex == i && this.pointSelected.colIndex == j) {
+                return;
+            }
+            if (!this.map.hasLine(this.pointSelected, { rowIndex: i, colIndex: j })) {
+                return this.pointSelected = null;
+            }
+            this.points[i][j] = this.currentTurn;
+            this.points[this.pointSelected.rowIndex][this.pointSelected.colIndex] = 0;
+            this.pointSelected = null;
+            if (this.players[this.currentTurn].canEat(i, j, this.points, this.currentTurn)) {
+                console.log(`player ${this.currentTurn} can eat`);
+                this.currentStep = 3;
+                return;
+            } else {
+                console.log(`player ${this.currentTurn} can't eat`);
+            }
+            this.swapTurn();
+        },
+        hightlightStateYouCanGo() {
+            for (let i in this.points) {
+                for (let j in this.points[i]) {
+                    if (i == this.pointSelected.rowIndex && j == this.pointSelected.colIndex) {
+                        continue;
+                    }
+                    if (this.points[i][j] !== 0) {
+                        continue;
+                    }
+                    if (!this.map.hasLine(this.pointSelected, { rowIndex: i, colIndex: j })) {
+                        continue;
+                    }
+                    this.points[i][j] = 3;
+                }
+            }
+        },
+        unHightlightStateYouCanGo() {
+            for (let i in this.points) {
+                for (let j in this.points[i]) {
+                    if (this.points[i][j] !== 3) {
+                        continue;
+                    }
+                    this.points[i][j] = 0;
+                }
+            }
+        },
+        eatPoint(i, j) {
+            if (this.points[i][j] != (3 - this.currentTurn)) {
+                return;
+            }
+            this.points[i][j] = 0;
+            this.currentStep = 2;
+            this.swapTurn();
+        },
+        playerHasPoint(index) {
+            var count = 0;
+            for (let i in this.points) {
+                for (let j in this.points[i]) {
+                    count += this.points[i][j] == index;
+                }
+            }
+            return count;
+        },
+        checkEndGame() {
+            var isEndgame = false;
+            isEndgame = isEndgame || this.playerHasPoint(1) < 3;
+            isEndgame = isEndgame || this.playerHasPoint(2) < 3;
+            isEndgame = isEndgame && this.currentStep == 2;
+            if (!isEndgame) {
+                return;
+            }
+            $('#modal-gameover').modal('show');
 
-		},
-		methods: {
-			step1({rowIndex, colIndex}) {
-				if(this.game.isPointFree({rowIndex, colIndex})) {
-					this.game.points[rowIndex][colIndex].setPlayer(this.currentTurn);
-					this.swapTurn();
-					this.pointsSetted++;
-				}
-				if(this.pointsSetted == this.limitPoints) {
-					this.step = 2;
-				}
-			},
-			swapTurn() {
-				this.currentTurn = 3 - this.currentTurn;
-			},
-			resetState() {
-				this.preState  = new Point();
-				// this.nextState = new Point();
-			},
-			step2({rowIndex, colIndex}) {
-				if(this.preState.rowIndex == null) {
-					if(this.game.isPointFree({rowIndex, colIndex})) {
-						this.resetState();
-						return;
-					}
-					if(this.game.ownerOfPoint({rowIndex, colIndex}) != this.currentTurn) {
-						this.resetState();
-						return;
-					}
-					this.preState.setIndex(rowIndex, colIndex);
-					this.hightlightStateYouCanGo();
-					return;
-				}
-				this.nextState.setIndex(rowIndex, colIndex);
+        }
+    },
+    created: function() {
+        this.genPoints();
+        this.map = new Map('game_box', 480);
+        this.players[1] = new Map('play1_box', 140);
+        this.players[2] = new Map('play2_box', 140);
 
-				setTimeout(() => {
-					this.resetState();
-				}, 500);
-				
-				if(!this.game.isPointFree(this.preState) && this.game.isPointFree(this.nextState) && this.game.ownerOfPoint(this.preState) == this.currentTurn && this.game.hasLine(this.preState, this.nextState)) {
-					this.game.movePoint(this.preState, this.nextState);
-					if(this.playerCanEat(this.currentTurn,{rowIndex,colIndex})) {
-						this.step = 3;
-						console.log('can eat');
-						this.unHightlightAllState();
-						return;
-					}
-					this.swapTurn();
-				}
-				this.unHightlightAllState();
-			},
-			hightlightStateYouCanGo() {
-				for(var rowIndex in this.game.points) {
-					for(var colIndex in this.game.points[rowIndex]) {
-						var point = this.game.points[rowIndex][colIndex];
-						if(!this.game.hasLine(this.preState, point)) {
-							continue;
-						}
-						if(!point.isFree()) {
-							continue;
-						}
-						point.canGo = true;
-					}
-				}
-			},
-			unHightlightAllState() {
-				for(var rowIndex in this.game.points) {
-					for(var colIndex in this.game.points[rowIndex]) {
-						var point = this.game.points[rowIndex][colIndex];
-						point.canGo = false;
-					}
-				}
-			},
-
-			stepEat({colIndex, rowIndex}) {
-				var point = this.game.points[rowIndex][colIndex];
-				if(this.game.isPointFree({rowIndex, colIndex})) {
-					console.log(`cant eat, point is free ${rowIndex}, ${colIndex}`);
-					return;
-				}
-				/* quân ta không được ăn quân mình*/
-				if(point.player == this.currentTurn) {
-					console.log('cant eat, point of myself');
-					return;
-				}
-				console.log('eat success');
-				console.log({rowIndex,colIndex});
-				
-				point.player = 0;
-				this.swapTurn();
-			},
-			playerCanEat(player, {rowIndex,colIndex}) {
-				// console.log("abc");
-				// console.log({rowIndex,colIndex});
-				var points = this.game.points;
-
-				if(rowIndex!=4 && colIndex !=4){
-					var row1 = 4 - rowIndex + parseInt(rowIndex);
-					var row2 = 2 * (4 - rowIndex) + parseInt(rowIndex);
-
-					var col1 = 4 - colIndex + parseInt(colIndex);
-					var col2 = 2 * (4 - colIndex) + parseInt(colIndex);
-
-					if((points[rowIndex][col1].player==player && points[rowIndex][col2].player==player)
-						|| (points[row1][colIndex].player==player && points[row2][colIndex].player==player))
-							return true;
-				}
-
-				if(rowIndex==4 || colIndex==4){
-					var row1 = parseInt(rowIndex) - Math.abs(4 - colIndex);
-					var row2 = parseInt(rowIndex) + Math.abs(4 - colIndex);
-					
-					if(row1==row2) {
-						row1--;
-						row2++;
-					}
-
-					console.log({"row1":row1,"row2":row2});
-
-					var col1 = parseInt(colIndex) - Math.abs(4 - rowIndex);
-					var col2 = parseInt(colIndex) + Math.abs(4 - rowIndex);
-
-					if(col1==col2) {
-						col1--;
-						col2++;
-					}
-
-					console.log({"col1":col1,"col2":col2});
-					if(rowIndex % 2 == 1){
-						if(points[rowIndex][col1].player==player && points[rowIndex][col2].player==player) 
-							return true;
-					}else if(colIndex % 2 == 1){
-						if(points[row1][colIndex].player==player && points[row2][colIndex].player==player) 
-							return true;
-					}else if((points[rowIndex][col1].player==player && points[rowIndex][col2].player==player)
-							|| (points[row1][colIndex].player==player && points[row2][colIndex].player==player))
-							return true;
-				}
-
-				return false;
-			},
-			clickPoint(rowIndex, colIndex) {
-				console.log({rowIndex, colIndex});
-				switch(this.step) {
-					case 1: {
-						this.step1({rowIndex, colIndex});
-						break;
-					};
-					case 2: {
-						this.step2({rowIndex, colIndex});
-						break;
-					};
-					case 3: {
-						this.stepEat({rowIndex, colIndex});
-						this.step = 2;
-						break;
-					};
-					default: break;
-				}
-			},
-			playerHasPoint(player) {
-				var count = 0;
-				var points = this.game.points;
-				for(var rowIndex in points) {
-					for(var colIndex in points[rowIndex]) {
-						count += points[rowIndex][colIndex].player == player;
-					}
-				}
-				return count; 
-			}
-		}
-	});
+        this.map.draw();
+        this.players[1].draw();
+        this.players[2].draw();
+    }
 });
