@@ -51,25 +51,25 @@ var app = new Vue({
         clickPoint(i, j) {
             switch (this.currentStep) {
                 case 1:
-                    if (this.points[i][j] !== 0) {
-                        break;
-                    }
-                    this.setPoint(i, j, this.currentTurn);
-                    this.pointsSetted++;
-                    if (this.pointsSetted == this.limitPoints) {
-                        toastr.success('Alert!', 'Change to step 2');
-                        this.currentStep = 2;
-                    }
-                    this.swapTurn();
+                if (this.points[i][j] !== 0) {
                     break;
+                }
+                this.setPoint(i, j, this.currentTurn);
+                this.pointsSetted++;
+                if (this.pointsSetted == this.limitPoints) {
+                    alert('change to step 2');
+                    this.currentStep = 2;
+                }
+                this.swapTurn();
+                break;
                 case 2:
-                    this.movePoint(i, j);
-                    break;
+                this.movePoint(i, j);
+                break;
                 case 3:
-                    this.eatPoint(i, j);
-                    break;
+                this.eatPoint(i, j);
+                break;
             }
-            if(this.checkEndGame()) {
+            if (this.checkEndGame()) {
                 return;
             }
             if (this.mode != this.modes.PLAY_WITH_AI || this.currentTurn != 2) {
@@ -77,24 +77,24 @@ var app = new Vue({
             }
             switch (this.currentStep) {
                 case 1:
-                    let { points: points1 } = AI.put(this.points, this.map, this.players, this.currentTurn);
-                    this.points = points1;
-                    this.pointsSetted++;
-                    if (this.pointsSetted == this.limitPoints)
-                        this.currentStep = 2;
-                    this.swapTurn();
-                    break;
+                let { points: points1 } = AI.put(this.points, this.map, this.players, this.currentTurn);
+                this.points = points1;
+                this.pointsSetted++;
+                if (this.pointsSetted == this.limitPoints)
+                    this.currentStep = 2;
+                this.swapTurn();
+                break;
                 case 2:
-                    let {
-                        points: points2,
-                        players: players2
-                    } = AI.move(this.points, this.players, this.map, this.currentTurn);
-                    this.points = points2;
-                    this.players = players2;
-                    this.swapTurn();
-                    break;
+                let {
+                    points: points2,
+                    players: players2
+                } = AI.move(this.points, this.players, this.map, this.currentTurn);
+                this.points = points2;
+                this.players = players2;
+                this.swapTurn();
+                break;
             }
-            if(this.checkEndGame()) {
+            if (this.checkEndGame()) {
                 return;
             }
         },
@@ -126,6 +126,7 @@ var app = new Vue({
             if (this.players[this.currentTurn].canEat(i, j, this.points, this.currentTurn)) {
                 console.log(`player ${this.currentTurn} can eat`);
                 this.currentStep = 3;
+                alert('select point to eat');
                 return;
             } else {
                 console.log(`player ${this.currentTurn} can't eat`);

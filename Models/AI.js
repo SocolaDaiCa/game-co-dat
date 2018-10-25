@@ -80,14 +80,14 @@ class AI {
     			i = Number(i);
     			j = Number(j);
     			for(let wi = -3; wi <= 3; wi++) {
-    				for(let wj = -3; wj <= 3; wj ++) {
+    				for(let wj = -3; wj <= 3; wj++) {
     					if(!map.hasLine(
     						{rowIndex: i, colIndex: j},
     						{rowIndex: i + wi, colIndex: j + wj}
     					)) {
     						continue
     					}
-    					if(!points[i + wi][j + wj]) {
+    					if(points[i + wi][j + wj]) {
     						continue;
     					}
     					weights[i][j] += 50;
@@ -110,8 +110,8 @@ class AI {
     	for(let i in points) {
     		for(let j in points[i]) {
     			if(points[i][j] != 0 || !map.hasLine(
-    				{rowIndex: i, colIndex: j },
-    				{rowIndex: maxWeight.i, colIndex: maxWeight.j}
+    				{rowIndex: maxWeight.i, colIndex: maxWeight.j},
+    				{rowIndex: i, colIndex: j }
     			)) {
     				continue;
     			}
@@ -126,6 +126,7 @@ class AI {
     						continue;
     					}
     					if(points[i + wi][j + wj] != 0) {
+    						console.log('zzz');
     						continue;
     					}
     					weights[i][j] += 50;
@@ -137,10 +138,10 @@ class AI {
     			}
     		}
     	}
+    	console.log(weights);
     	console.log(`AI move (${maxWeight.i}, ${maxWeight.j}) to (${to.i}, ${to.j})`);
-    	// console.log(points);
-    	points[maxWeight.i][maxWeight.j] = 0;
-    	points[to.i][to.j] = currentTurn;
+	    	points[to.i][to.j] = currentTurn;
+	    	points[maxWeight.i][maxWeight.j] = 0;
     	if(players[currentTurn].canEat(to.i, to.j, points, currentTurn)) {
     		let {points: points3} = this.eat(points, map, currentTurn);
     		points = points3;
